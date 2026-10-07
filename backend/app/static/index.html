@@ -3,223 +3,325 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VaultRAG</title>
+<meta name="theme-color" content="#07112b">
+<title>Logic Labs — Secure Knowledge</title>
 <style>
-:root{--concrete:#d8dbdc;--ink:#15191c;--red:#d1202f;--brass:#a8842c;--steel:#31475a;--paper:#f7f8f8;--line:#b7bcbf}
+:root{
+  --bg:#050b1b;--bg2:#071431;--panel:#0b1837;--panel2:#0e1e43;--line:rgba(129,150,255,.19);
+  --text:#f7f9ff;--muted:#94a7ce;--dim:#65779e;--primary:#6d63ff;--primary2:#35a8ff;
+  --green:#35df9a;--amber:#f7b955;--red:#ff5f78;--shadow:0 26px 80px rgba(0,0,0,.42);
+}
 *{box-sizing:border-box}
-body{margin:0;background:var(--concrete);color:var(--ink);font:16px/1.5 "Segoe UI","Helvetica Neue",Arial,sans-serif}
-main{max-width:1080px;margin:0 auto;padding:20px 16px 64px}
-h1{margin:0;font:800 44px/1 "Arial Black","Helvetica Neue",Arial,sans-serif;letter-spacing:-1.5px}
-h1 span{color:var(--red)}
-.tag{margin:6px 0 20px;color:var(--steel);max-width:60ch}
-.doors{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.door{background:var(--paper);border:2px solid var(--line);border-radius:6px;padding:14px;text-align:left;cursor:pointer;font:inherit;color:inherit;display:flex;gap:12px;align-items:center}
-.door:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--steel);outline-offset:2px}
-.door[aria-pressed=true]{border-color:var(--red);background:#fff}
-.dial{flex:none;width:58px;height:58px}
-.dial circle.rim{fill:var(--steel)}.dial circle.face{fill:#e9ebec;stroke:var(--brass);stroke-width:3}
-.dial .needle{stroke:var(--red);stroke-width:4;stroke-linecap:round;transform-origin:29px 29px;transition:transform .5s cubic-bezier(.3,1.4,.5,1)}
-.door b{display:block;font-size:17px}.door small{color:#4b555b;display:block;line-height:1.3}
-.stats{display:flex;gap:28px;margin:18px 0 6px;flex-wrap:wrap}
-.stat b{display:block;font:800 34px/1 "Arial Black",Arial,sans-serif}.stat small{color:var(--steel)}
-.stat.leak b{color:#1b7a43}.stat.leak.bad b{color:var(--red)}
-.ask{display:flex;gap:8px;margin:14px 0;flex-wrap:wrap}
-.ask input{flex:1 1 320px;padding:13px 14px;border:2px solid var(--ink);border-radius:6px;font:inherit;background:#fff}
-button.btn{padding:12px 16px;border:2px solid var(--ink);background:var(--ink);color:#fff;border-radius:6px;font:600 15px inherit;cursor:pointer}
-button.btn.alt{background:transparent;color:var(--ink)}button.btn.red{background:var(--red);border-color:var(--red)}
-button.btn:disabled{opacity:.5;cursor:wait}
-.eg{color:var(--steel);font-size:14px;margin:0 0 14px}.eg button{background:none;border:0;color:var(--steel);text-decoration:underline;cursor:pointer;font:inherit;padding:0 6px 0 0}
-.card{background:var(--paper);border:2px solid var(--line);border-radius:6px;padding:16px;margin:12px 0}
-.claim{margin:0 0 8px}
-.chip{display:inline-block;min-width:22px;text-align:center;margin-left:4px;padding:0 6px;border-radius:4px;background:var(--steel);color:#fff;font-size:13px;font-weight:700;border:0;cursor:pointer}
-.meta{color:var(--steel);font-size:14px}
-.src{border-top:1px solid var(--line);padding:8px 0;font-size:14px}.src:first-child{border-top:0}
-.src q{color:#40494f}
-.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
-.cols .card{margin:0}
-.rt-row{padding:8px 0;border-top:1px solid var(--line);font-size:14px}.rt-row:first-child{border-top:0}
-.ok{color:#1b7a43;font-weight:700}.bad{color:var(--red);font-weight:700}
-dialog{border:3px solid var(--ink);border-radius:8px;padding:0;max-width:min(960px,96vw);width:100%}
-dialog::backdrop{background:rgba(21,25,28,.65)}
-.dh{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:2px solid var(--ink)}
-dialog img{display:block;max-width:100%;margin:0 auto}.dtext{padding:16px;white-space:pre-wrap}
-details{margin-top:28px}summary{cursor:pointer;font-weight:600}
-form.up{display:grid;gap:8px;max-width:420px;margin-top:10px}form.up input,form.up select{padding:8px;border:2px solid var(--line);border-radius:6px;font:inherit}
-.auth{max-width:720px;margin:80px auto 0}.auth h2{margin:0 0 6px;font-size:28px}.auth p{margin:0 0 18px;color:var(--steel)}.auth-choices{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.auth-choice{background:#fff;border:2px solid var(--line);border-radius:6px;padding:12px;text-align:left;cursor:pointer;font:inherit}.auth-choice.sel{border-color:var(--red);box-shadow:inset 0 0 0 1px var(--red)}.auth-form{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}.auth-form input{flex:1 1 260px;padding:12px 13px;border:2px solid var(--ink);border-radius:6px;font:inherit}.auth-msg{min-height:22px;margin-top:8px}.session{display:flex;justify-content:space-between;gap:12px;align-items:center;margin:0 0 12px;color:var(--steel)}.session b{color:var(--ink)}
-@media (max-width:720px){.doors{grid-template-columns:1fr}.auth-choices{grid-template-columns:1fr}h1{font-size:34px}}
-@media (prefers-reduced-motion:reduce){.dial .needle{transition:none}}
+html{min-height:100%;background:var(--bg)}
+body{margin:0;min-height:100vh;color:var(--text);font:15px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:
+ radial-gradient(circle at 14% 12%,rgba(52,92,255,.16),transparent 28%),
+ radial-gradient(circle at 84% 20%,rgba(105,66,255,.16),transparent 28%),
+ radial-gradient(circle at 50% 100%,rgba(24,132,255,.12),transparent 30%),
+ linear-gradient(160deg,#04091a 0%,#07112b 48%,#071631 100%);overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.34;background-image:linear-gradient(rgba(105,128,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(105,128,255,.08) 1px,transparent 1px);background-size:56px 56px;mask-image:linear-gradient(to bottom,rgba(0,0,0,.65),transparent 85%)}
+button,input,select{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #8f87ff;outline-offset:3px}
+.hidden{display:none!important}
+
+.shell{width:min(1180px,calc(100% - 40px));margin:0 auto;padding:26px 0 54px;position:relative;z-index:1}
+
+/* Brand / shared */
+.brand{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:-.02em}
+.brand-mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(145deg,#3b2fff,#79bbff);display:grid;place-items:center;box-shadow:0 10px 28px rgba(84,76,255,.32)}
+.brand-mark svg{width:22px;height:22px}
+.brand-name{font-size:22px}.brand-name span{color:#7b7cff}
+.eyebrow{text-transform:uppercase;letter-spacing:.2em;font-size:11px;font-weight:800;color:#7e91be}
+.badge{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:6px 10px;background:rgba(11,24,55,.7);color:#9cb0da;font-size:11px;font-weight:800;letter-spacing:.04em}
+.dot{width:7px;height:7px;border-radius:999px;background:var(--green);box-shadow:0 0 13px rgba(53,223,154,.65)}
+.iconbtn{width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:rgba(9,22,51,.72);color:#bdcae7;display:grid;place-items:center}
+.iconbtn:hover{background:rgba(16,32,72,.95);color:#fff}
+
+/* Login */
+.login-wrap{min-height:100vh;display:grid;place-items:center;padding:32px 18px;position:relative;overflow:hidden}
+.login-orb{position:absolute;border-radius:999px;filter:blur(70px);opacity:.35;pointer-events:none}.login-orb.a{width:360px;height:360px;background:#283cff;top:-100px;left:-100px}.login-orb.b{width:420px;height:420px;background:#6a39ff;right:-120px;top:12%}.login-orb.c{width:320px;height:320px;background:#1475ff;bottom:-150px;left:35%}
+.login-top{position:absolute;top:30px;left:clamp(24px,6vw,86px);right:clamp(24px,6vw,86px);display:flex;justify-content:space-between;align-items:center}
+.login-layout{width:min(1060px,100%);display:grid;grid-template-columns:1fr minmax(450px,620px);gap:54px;align-items:center}
+.login-copy{padding-left:4px}
+.login-copy h1{font-size:clamp(44px,6vw,72px);line-height:.96;letter-spacing:-.06em;margin:12px 0 22px;max-width:620px}
+.login-copy h1 span{background:linear-gradient(90deg,#fff 10%,#98a3ff 46%,#51baff 82%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.login-copy p{font-size:18px;color:#9aacd0;max-width:550px;margin:0 0 28px}
+.copy-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:580px}.copy-chip{padding:14px 14px 12px;border:1px solid var(--line);border-radius:15px;background:rgba(10,22,50,.58);backdrop-filter:blur(14px)}.copy-chip b{display:block;font-size:13px;margin-bottom:4px}.copy-chip span{font-size:11px;color:#7f92bd}
+.visual{position:relative;height:410px;max-width:390px;display:grid;place-items:center}.db-visual{width:150px;height:260px;border-radius:36px;background:linear-gradient(180deg,#1a55da,#132354 55%,#09122e);border:1px solid rgba(111,145,255,.4);box-shadow:0 0 0 20px rgba(70,90,255,.06),0 0 100px rgba(75,78,255,.22);position:relative}.db-visual:before,.db-visual:after{content:"";position:absolute;left:-10px;right:-10px;height:40px;border-radius:50%;border:1px solid rgba(113,168,255,.45);background:linear-gradient(180deg,rgba(46,132,255,.35),rgba(8,24,60,.15));}.db-visual:before{top:0;transform:translateY(-50%)}.db-visual:after{bottom:0;transform:translateY(50%)}
+.shield{position:absolute;right:15px;top:55px;width:128px;height:150px;display:grid;place-items:center;filter:drop-shadow(0 12px 35px rgba(68,109,255,.34))}.shield svg{width:100%;height:100%}
+.floating-label{position:absolute;border:1px solid rgba(111,144,255,.22);background:rgba(7,17,40,.77);backdrop-filter:blur(12px);padding:12px 15px;border-radius:14px;font-size:11px;color:#91a6d3;letter-spacing:.12em;text-transform:uppercase;box-shadow:0 16px 38px rgba(0,0,0,.22)}.fl1{left:0;top:35px}.fl2{right:-2px;bottom:56px}.fl3{left:18px;bottom:10px}
+
+.auth-card{position:relative;padding:30px;border:1px solid rgba(119,137,255,.3);border-radius:28px;background:linear-gradient(180deg,rgba(14,29,65,.92),rgba(7,18,43,.95));box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.03);backdrop-filter:blur(18px)}
+.auth-card:before{content:"";position:absolute;inset:-1px;border-radius:29px;background:linear-gradient(135deg,rgba(132,111,255,.42),transparent 38%,rgba(53,168,255,.24));z-index:-1;filter:blur(14px);opacity:.72}
+.auth-head{margin-bottom:22px}.auth-head h2{margin:8px 0 8px;font-size:33px;letter-spacing:-.04em}.auth-head p{margin:0;color:#93a7d0;font-size:13px}
+.personas{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0 16px}.persona{position:relative;text-align:left;border:1px solid var(--line);background:rgba(10,23,52,.72);border-radius:16px;padding:15px 13px;color:#dfe6fb;min-height:130px;transition:.2s ease}.persona:hover{transform:translateY(-2px);border-color:rgba(129,120,255,.55)}.persona.active{border-color:#8a7fff;box-shadow:0 0 0 1px rgba(138,127,255,.2),0 15px 34px rgba(73,65,255,.14);background:linear-gradient(180deg,rgba(21,35,82,.93),rgba(10,22,52,.86))}.persona .avatar{width:35px;height:35px;border-radius:12px;background:linear-gradient(145deg,#203b8b,#14265b);display:grid;place-items:center;margin-bottom:12px}.persona .name{font-weight:800;font-size:15px}.persona .role{display:block;color:#8195bf;font-size:11px;margin-top:2px;line-height:1.3}.clearance{display:inline-flex;margin-top:11px;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:800;letter-spacing:.04em}.c0{background:rgba(255,95,120,.15);color:#ff98aa}.c2{background:rgba(247,185,85,.14);color:#ffd37b}.c3{background:rgba(53,223,154,.14);color:#76f0ba}
+.password-row{display:flex;align-items:center;gap:10px;border:1px solid rgba(124,146,211,.24);background:rgba(4,11,28,.48);border-radius:14px;padding:0 12px}.password-row input{flex:1;border:0;outline:0;background:transparent;color:#fff;padding:14px 4px;font-size:14px}.password-row input::placeholder{color:#5f739c}.eye{border:0;background:transparent;color:#7185ae;width:30px;height:34px;padding:0}.primary-btn{width:100%;border:0;border-radius:14px;padding:14px 16px;margin-top:12px;color:#fff;background:linear-gradient(100deg,#5b50f4,#5f78ff 52%,#3eafff);font-weight:850;box-shadow:0 15px 35px rgba(72,83,255,.28);transition:.2s}.primary-btn:hover{transform:translateY(-1px);box-shadow:0 20px 42px rgba(72,83,255,.34)}.primary-btn:disabled{opacity:.58;transform:none;cursor:wait}
+.sec-row{display:grid;grid-template-columns:repeat(3,1fr);margin-top:20px;padding-top:18px;border-top:1px solid rgba(124,146,211,.14)}.sec-item{padding:0 10px;border-right:1px solid rgba(124,146,211,.14)}.sec-item:first-child{padding-left:0}.sec-item:last-child{border-right:0}.sec-item b{display:block;font-size:11px;margin-bottom:2px}.sec-item span{font-size:10px;color:#7185ae}
+.auth-msg{min-height:20px;margin-top:9px;color:#ff8ea1;font-size:12px}.auth-msg.ok{color:#79eebc}.signup-toggle{margin-top:14px;width:100%;border:1px solid rgba(124,146,211,.2);background:rgba(10,23,52,.55);color:#c7d3ee;border-radius:12px;padding:10px;font-weight:800}.signup-box{margin-top:12px;padding:14px;border:1px solid rgba(124,146,211,.16);background:rgba(5,14,34,.35);border-radius:14px}.signup-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.signup-grid input,.signup-grid select{width:100%;border:1px solid rgba(124,146,211,.22);background:#07132e;color:#fff;border-radius:10px;padding:11px}.signup-grid .full{grid-column:1/-1}.signup-note{font-size:10px;color:#7185ae;margin-top:7px}.signup-msg{min-height:18px;margin-top:8px;color:#ff8ea1;font-size:11px}.signup-msg.ok{color:#79eebc}
+
+/* App */
+.app{padding-top:18px}.nav{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:28px}.nav-right{display:flex;align-items:center;gap:10px}.user-pill{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:rgba(9,20,45,.66);padding:7px 10px 7px 7px;border-radius:999px;color:#c8d3eb;font-size:12px}.user-avatar{width:27px;height:27px;border-radius:999px;background:linear-gradient(140deg,#3e3af3,#47aeff);display:grid;place-items:center;font-size:11px;font-weight:900}
+.hero{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:end;margin-bottom:18px}.hero h1{margin:6px 0 10px;font-size:clamp(38px,5vw,58px);letter-spacing:-.055em;line-height:.98}.hero h1 span{color:#6e72ff}.hero p{margin:0;color:#93a7d0;max-width:700px}.hero-side{display:grid;justify-items:end;gap:9px}.ribbon{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(75,220,156,.22);background:rgba(25,116,86,.11);padding:7px 10px;border-radius:999px;color:#8cebbf;font-size:11px;font-weight:800}
+.persona-rail{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}.rail-card{border:1px solid var(--line);background:rgba(9,22,49,.72);padding:15px 16px;border-radius:18px;display:flex;justify-content:space-between;gap:12px;align-items:center}.rail-card.active{border-color:#796eff;box-shadow:0 0 0 1px rgba(121,110,255,.15)}.rail-main{display:flex;align-items:center;gap:12px}.rail-icon{width:38px;height:38px;border-radius:13px;background:linear-gradient(145deg,#1b3d94,#13265a);display:grid;place-items:center}.rail-card b{font-size:13px}.rail-card small{display:block;color:#6f83ad;font-size:10px;margin-top:1px}.rail-clear{font-size:10px;font-weight:900;padding:5px 8px;border-radius:999px}.rail-clear.c0{background:rgba(255,95,120,.13)}.rail-clear.c2{background:rgba(247,185,85,.13)}.rail-clear.c3{background:rgba(53,223,154,.13)}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0}.metric{border:1px solid var(--line);background:linear-gradient(180deg,rgba(11,25,56,.86),rgba(8,18,41,.7));border-radius:18px;padding:17px}.metric-head{display:flex;align-items:center;justify-content:space-between;color:#7b90ba;font-size:11px}.metric-value{font-size:32px;font-weight:850;letter-spacing:-.04em;margin-top:7px}.metric-value.green{color:#74edba}.metric-value.red{color:#ff8698}.metric-note{color:#687da8;font-size:10px;margin-top:3px}
+.query-card{border:1px solid rgba(117,135,253,.27);background:linear-gradient(180deg,rgba(12,26,59,.88),rgba(8,18,42,.84));border-radius:22px;padding:16px;box-shadow:0 22px 50px rgba(0,0,0,.18)}.query-row{display:flex;gap:10px}.query-input{flex:1;border:1px solid rgba(125,145,211,.24);background:#061028;color:#fff;border-radius:14px;padding:14px 16px;outline:0}.query-input::placeholder{color:#58709c}.btn{border:1px solid var(--line);background:#101f45;color:#d9e2f7;border-radius:12px;padding:11px 14px;font-weight:800;font-size:12px}.btn:hover{background:#172b5c}.btn.primary{background:linear-gradient(100deg,#5c51f5,#3faffe);border:0;color:#fff;box-shadow:0 12px 26px rgba(64,87,255,.22)}.btn.red{background:rgba(255,95,120,.11);border-color:rgba(255,95,120,.22);color:#ff8ea1}.btn:disabled{opacity:.55;cursor:wait}.examples{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.example{border:1px solid rgba(124,146,211,.16);background:rgba(6,16,38,.52);color:#8296bf;border-radius:999px;padding:7px 10px;font-size:10px}.example:hover{color:#d8e2f7;border-color:rgba(124,146,211,.32)}
+.out{margin-top:14px}.answer-card{border:1px solid var(--line);background:rgba(8,19,44,.76);border-radius:18px;padding:18px}.answer-title{display:flex;justify-content:space-between;gap:12px;align-items:start;margin-bottom:12px}.answer-title h3{margin:0;font-size:17px}.answer-meta{color:#7185af;font-size:10px}.claim{margin:0 0 10px;color:#dfe7f8}.chip{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;margin-left:5px;border:1px solid rgba(106,128,194,.25);border-radius:8px;background:#10234d;color:#aebaf4;font-size:10px;font-weight:900}.chip:hover{background:#1b3675;color:#fff}.answer-foot{margin-top:14px;padding-top:12px;border-top:1px solid rgba(124,146,211,.12);display:flex;gap:16px;flex-wrap:wrap;color:#7185af;font-size:10px}.src{border-top:1px solid rgba(124,146,211,.12);padding:12px 0 0;margin-top:12px}.src:first-child{border-top:0;padding-top:0;margin-top:0}.src .title{font-weight:800;color:#dfe7f8;font-size:11px}.src q{display:block;color:#6f83ae;font-size:10px;margin-top:4px}
+.two-col{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.two-col>*{min-width:0}.rt{padding:10px 0;border-top:1px solid rgba(124,146,211,.12);font-size:10px;color:#8ca0c5}.rt:first-child{border-top:0}.ok{color:#7ceabd;font-weight:900}.bad{color:#ff8799;font-weight:900}
+.admin{margin-top:18px;border:1px solid var(--line);background:rgba(8,19,44,.68);border-radius:18px;padding:16px}.admin summary{cursor:pointer;color:#c4d0e8;font-weight:800}.up{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:10px;margin-top:14px}.up input,.up select{width:100%;border:1px solid rgba(124,146,211,.2);background:#07132e;color:#dbe4f7;border-radius:11px;padding:11px 12px}.up input[type=file]{grid-column:1/-1}.up-msg{grid-column:1/-1;color:#7185ad;font-size:10px}.modal{border:1px solid rgba(122,139,255,.4);border-radius:20px;padding:0;width:min(940px,92vw);background:#07132e;color:#fff;box-shadow:var(--shadow)}.modal::backdrop{background:rgba(2,7,18,.78);backdrop-filter:blur(5px)}.modal-head{display:flex;justify-content:space-between;align-items:center;padding:13px 15px;border-bottom:1px solid rgba(124,146,211,.12)}.modal img{display:block;max-width:100%;max-height:76vh;margin:0 auto}.modal-text{padding:16px;white-space:pre-wrap;color:#d9e3f5}
+.toast{position:fixed;bottom:24px;right:24px;z-index:10;display:none;max-width:340px;border:1px solid rgba(124,146,211,.22);background:rgba(8,19,42,.94);color:#dce5f9;border-radius:14px;padding:11px 13px;box-shadow:var(--shadow);font-size:12px}
+
+@media(max-width:980px){.login-layout{grid-template-columns:1fr;max-width:680px}.login-copy{display:none}.login-wrap{padding-top:86px}.hero{grid-template-columns:1fr}.hero-side{justify-items:start}.up{grid-template-columns:1fr 1fr}.up input[type=file]{grid-column:1/-1}}
+@media(max-width:760px){.shell{width:min(100% - 24px,1180px)}.login-layout{max-width:620px}.auth-card{padding:22px}.personas,.persona-rail,.metrics{grid-template-columns:1fr}.copy-grid{grid-template-columns:1fr}.query-row{flex-wrap:wrap}.query-input{flex-basis:100%}.two-col{grid-template-columns:1fr}.up{grid-template-columns:1fr}.nav-right .badge{display:none}.login-top{left:18px;right:18px}.sec-row{grid-template-columns:1fr;gap:10px}.sec-item{border-right:0;padding:0}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 </style>
 </head>
 <body>
-<main>
-  <section class="auth" id="loginPanel" aria-labelledby="loginTitle">
-    <div class="card">
-      <h2 id="loginTitle">Sign in to VaultRAG</h2>
-      <p>Choose a demo persona, then enter its password. The selected identity is used to establish the PostgreSQL RLS session.</p>
-      <div class="auth-choices" id="loginChoices" role="group" aria-label="Choose a user"></div>
-      <form class="auth-form" id="loginForm">
-        <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Password" required minlength="8" aria-label="Password">
-        <button class="btn" type="submit">Sign in</button>
-      </form>
-      <div class="auth-msg bad" id="loginMsg" aria-live="polite"></div>
+<div id="loginPanel" class="login-wrap">
+  <div class="login-orb a"></div><div class="login-orb b"></div><div class="login-orb c"></div>
+  <div class="login-top">
+    <div class="brand"><div class="brand-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 5.5 12 2l7 3.5v6.8L12 16l-7-3.7V5.5Z" stroke="white" stroke-width="1.7"/><path d="m8.2 8.2 3.8 1.9 3.8-1.9" stroke="#8f9dff" stroke-width="1.7"/><path d="M12 10.1v7.2" stroke="#8f9dff" stroke-width="1.7"/></svg></div><div class="brand-name">Logic<span>Labs</span></div></div>
+    <div class="badge"><span class="dot"></span> RLS ENABLED</div>
+  </div>
+
+  <div class="login-layout">
+    <div class="login-copy">
+      <div class="eyebrow">Secure • Controlled • Trusted</div>
+      <h1>Secure knowledge,<br>controlled by <span>your data.</span></h1>
+      <p>Logic Labs keeps access control inside PostgreSQL. A chunk the user cannot see is filtered before retrieval, ranking, and model inference.</p>
+      <div class="copy-grid">
+        <div class="copy-chip"><b>Postgres RLS</b><span>Data-level enforcement</span></div>
+        <div class="copy-chip"><b>Claim citations</b><span>Every answer linked to evidence</span></div>
+        <div class="copy-chip"><b>Zero-trust retrieval</b><span>Hidden chunks never reach the AI</span></div>
+      </div>
+      <div class="visual" aria-hidden="true">
+        <div class="floating-label fl1">RLS ACTIVE</div><div class="floating-label fl2">ZERO-TRUST RETRIEVAL</div><div class="floating-label fl3">YOUR DATA • YOUR ACCESS • YOUR AI</div>
+        <div class="db-visual"></div>
+        <div class="shield"><svg viewBox="0 0 150 175" fill="none"><path d="M75 7 132 27v45c0 40-24 68-57 91C42 140 18 112 18 72V27L75 7Z" fill="url(#g)" stroke="#7b83ff" stroke-width="2"/><rect x="52" y="67" width="46" height="37" rx="8" fill="#5f7efc" stroke="#b9c4ff"/><path d="M62 67V57c0-9 6-16 13-16s13 7 13 16v10" stroke="#e6ebff" stroke-width="6" stroke-linecap="round"/><circle cx="75" cy="85" r="4" fill="#fff"/><path d="M75 89v7" stroke="#fff" stroke-width="3" stroke-linecap="round"/><defs><linearGradient id="g" x1="20" y1="10" x2="123" y2="168" gradientUnits="userSpaceOnUse"><stop stop-color="#263bd6" stop-opacity=".65"/><stop offset="1" stop-color="#102058" stop-opacity=".9"/></linearGradient></defs></svg></div>
+      </div>
     </div>
+
+    <section class="auth-card" aria-labelledby="loginTitle">
+      <div class="auth-head"><div class="eyebrow">Sign in to Logic Labs</div><h2 id="loginTitle">Secure access to your vault.</h2><p>Enter your assigned name@role ID. The role suffix establishes the PostgreSQL RLS identity.</p></div>
+      <div class="personas" id="loginChoices" role="group" aria-label="Demo identities">
+        <button type="button" class="persona active" data-u="rahul@student">
+          <div class="avatar">🎓</div>
+          <span class="name">Rahul Patel</span>
+          <span class="role">rahul@student</span>
+          <span class="clearance c0">Student · Clearance 0</span>
+        </button>
+        <button type="button" class="persona" data-u="neha@faculty">
+          <div class="avatar">👥</div>
+          <span class="name">Dr. Neha Sharma</span>
+          <span class="role">neha@faculty</span>
+          <span class="clearance c2">Faculty · Clearance 2</span>
+        </button>
+        <button type="button" class="persona" data-u="arjun@admin">
+          <div class="avatar">🛡</div>
+          <span class="name">Arjun Mehta</span>
+          <span class="role">arjun@admin</span>
+          <span class="clearance c3">Admin · Clearance 3</span>
+        </button>
+      </div>
+      <form id="loginForm">
+        <div class="password-row"><span aria-hidden="true">✉️</span><input id="loginId" type="text" autocomplete="username" placeholder="Login ID — e.g. rahul@student" value="rahul@student" required pattern="[A-Za-z0-9._-]+@(student|faculty|admin)" aria-label="Login ID"></div>
+        <div class="password-row"><span aria-hidden="true">🔒</span><input id="loginPassword" type="password" autocomplete="current-password" placeholder="Enter your password" required minlength="8" aria-label="Password"><button class="eye" type="button" id="togglePassword" aria-label="Show password">◉</button></div>
+        <button class="primary-btn" id="loginBtn" type="submit">Sign in securely <span aria-hidden="true">→</span></button>
+      </form>
+      <div class="auth-msg" id="loginMsg" aria-live="polite"></div>
+      <div class="demo-credentials" style="margin-top:12px;border:1px solid rgba(124,146,211,.14);background:rgba(5,14,34,.4);border-radius:12px;padding:10px 12px;color:#7890bb;font-size:10px;line-height:1.7">
+        <b style="color:#b9c7e7">Hackathon demo credentials</b><br>
+        rahul@student / Student@123 &nbsp; • &nbsp; neha@faculty / Faculty@123 &nbsp; • &nbsp; arjun@admin / Admin@123
+      </div>
+      <button class="signup-toggle" id="signupToggle" type="button">Create a new account →</button>
+      <form id="signupBox" class="signup-box hidden">
+        <div class="eyebrow">New account</div>
+        <div class="signup-grid">
+          <input class="full" id="signupName" placeholder="Full name" required maxlength="80">
+          <input id="signupHandle" placeholder="Handle (e.g. rahul)" required maxlength="31" pattern="[A-Za-z][A-Za-z0-9._-]{2,30}">
+          <select id="signupRole" aria-label="Role"><option value="student">Student</option><option value="faculty">Faculty Member</option></select>
+          <input id="signupPassword" type="password" placeholder="Password (8+ characters)" required minlength="8">
+          <input id="signupPassword2" type="password" placeholder="Confirm password" required minlength="8">
+        </div>
+        <button class="primary-btn" type="submit">Create account &amp; sign in <span aria-hidden="true">→</span></button>
+        <div class="signup-note">Admin accounts are not self-service. A successful signup creates <code>handle@student</code> or <code>handle@faculty</code>.</div>
+        <div class="signup-msg" id="signupMsg" aria-live="polite"></div>
+      </form>
+      <div class="sec-row">
+        <div class="sec-item"><b>Postgres RLS</b><span>Database-enforced access</span></div>
+        <div class="sec-item"><b>Cited answers</b><span>Evidence behind every claim</span></div>
+        <div class="sec-item"><b>Zero-trust retrieval</b><span>Hidden data stays hidden</span></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div id="appShell" class="shell app hidden">
+  <nav class="nav">
+    <div class="brand"><div class="brand-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 5.5 12 2l7 3.5v6.8L12 16l-7-3.7V5.5Z" stroke="white" stroke-width="1.7"/><path d="m8.2 8.2 3.8 1.9 3.8-1.9" stroke="#8f9dff" stroke-width="1.7"/><path d="M12 10.1v7.2" stroke="#8f9dff" stroke-width="1.7"/></svg></div><div class="brand-name">Logic<span>Labs</span></div></div>
+    <div class="nav-right"><div class="badge"><span class="dot"></span> SECURE SESSION</div><div class="user-pill"><div class="user-avatar" id="userAvatar">V</div><span id="sessionUser"></span></div><button class="iconbtn" id="logoutBtn" type="button" aria-label="Log out">↗</button></div>
+  </nav>
+
+  <section class="hero"><div><div class="eyebrow">Secure multi-modal RAG</div><h1>Your knowledge. <span>Your rules.</span></h1><p>Ask about academic information and Logic Labs retrieves only what your identity is authorized to see. PostgreSQL RLS filters chunks before ranking and before the AI reads them.</p></div><div class="hero-side"><div class="ribbon"><span class="dot"></span> Access layer operational</div><span class="badge">Postgres • RLS • Citations</span></div></section>
+
+  <section class="persona-rail" id="doors" role="group" aria-label="Current demo persona"></section>
+
+  <section class="metrics" aria-live="polite">
+    <div class="metric"><div class="metric-head"><span>CHUNKS BLOCKED</span><span>RLS</span></div><div class="metric-value" id="sBlocked">0</div><div class="metric-note">Rows denied before retrieval reaches the model</div></div>
+    <div class="metric"><div class="metric-head"><span>CLAIMS DROPPED</span><span>VERIFY</span></div><div class="metric-value" id="sDropped">0</div><div class="metric-note">Unsupported or numerically ungrounded claims removed</div></div>
+    <div class="metric"><div class="metric-head"><span>RED-TEAM LEAKS</span><span>12 ATTACKS</span></div><div class="metric-value green" id="sLeaks">0</div><div class="metric-note">Secret-bearing attacks that escaped the vault</div></div>
   </section>
 
-  <section id="appShell" hidden>
-  <div class="session"><span>Signed in as <b id="sessionUser"></b></span><button class="btn alt" id="logoutBtn" type="button">Log out</button></div>
-  <h1>Vault<span>RAG</span></h1>
-  <p class="tag">Ask a question. The database decides what you may see before the model ever reads a word, and every claim in the answer points to the page it came from.</p>
+  <section class="query-card">
+    <div class="query-row"><input class="query-input" id="q" placeholder="Ask about results, fees, attendance, timetables, or academic policies..." aria-label="Question" autocomplete="off"><button class="btn primary" id="askBtn">Ask →</button><button class="btn" id="cmpBtn">Compare all</button><button class="btn red" id="rtBtn">Run red team</button></div>
+    <div class="examples"><button class="example" data-q="What is Rahul Patel's SGPA?">My SGPA</button><button class="example" data-q="How much fee did Rahul Patel pay?">My fee receipt</button><button class="example" data-q="What lectures are on Monday?">Faculty timetable</button><button class="example" data-q="When is the Data Structures examination?">Exam timetable</button></div>
+  </section>
 
-  <div class="doors" id="doors" role="group" aria-label="Choose who is asking"></div>
+  <div id="out" class="out"></div>
 
-  <div class="stats" aria-live="polite">
-    <div class="stat"><b id="sBlocked">0</b><small>chunks blocked by the vault</small></div>
-    <div class="stat"><b id="sDropped">0</b><small>unsupported claims dropped</small></div>
-    <div class="stat leak" id="sLeakBox"><b id="sLeaks">0</b><small>leaks found by red team</small></div>
-  </div>
+  <details id="adminBox" class="admin" hidden><summary>Admin controls — ingest protected knowledge</summary><form class="up" id="up"><input name="file" type="file" required accept=".pdf,.png,.jpg,.jpeg,.webp,.bmp,.txt,.md,.csv"><input name="title" placeholder="Document title" required><select name="clearance"><option value="0">Clearance 0 — everyone</option><option value="1">Clearance 1</option><option value="2">Clearance 2</option><option value="3">Clearance 3 — admins</option></select><input name="departments" placeholder="Departments, comma separated (blank = all)"><input name="owner_username" placeholder="Student owner (optional, e.g. rahul@student)"><button class="btn primary" type="submit">Ingest into vault</button><span id="upMsg" class="up-msg">CSV rows become searchable database-style records.</span></form></details>
+</div>
 
-  <div class="ask">
-    <input id="q" placeholder="Ask about policies, budgets, people, contracts" aria-label="Question" autocomplete="off">
-    <button class="btn" id="askBtn">Ask</button>
-    <button class="btn alt" id="cmpBtn">Ask as all three</button>
-    <button class="btn red" id="rtBtn">Run red team</button>
-  </div>
-  <p class="eg">Try:
-    <button data-q="What is Project Midnight?">What is Project Midnight?</button>
-    <button data-q="How many days of paid leave do employees get?">Paid leave days</button>
-    <button data-q="What is Asha Mehta's salary?">Asha Mehta's salary</button>
-    <button data-q="What was Q3 revenue?">Q3 revenue</button>
-  </p>
-
-  <div id="out"></div>
-
-  <details id="adminBox" hidden>
-    <summary>Add a document to the vault (admin)</summary>
-    <form class="up" id="up">
-      <input name="file" type="file" required accept=".pdf,.png,.jpg,.jpeg,.webp,.bmp,.txt,.md,.csv">
-      <input name="title" placeholder="Document title" required>
-      <select name="clearance"><option value="0">Clearance 0: everyone</option><option value="1">Clearance 1</option><option value="2">Clearance 2</option><option value="3">Clearance 3: admins only</option></select>
-      <input name="departments" placeholder="Departments, comma separated (blank = all)">
-      <button class="btn" type="submit">Ingest document</button>
-      <span id="upMsg" class="meta">CSV: one row becomes one searchable database-style record.</span>
-    </form>
-  </details>
-</section>
-</main>
-
-<dialog id="dlg"><div class="dh"><b id="dTitle"></b><button class="btn alt" id="dClose">Close</button></div><div id="dBody"></div></dialog>
+<dialog id="dlg" class="modal"><div class="modal-head"><b id="dTitle"></b><button class="btn" id="dClose" type="button">Close</button></div><div id="dBody"></div></dialog>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
 
 <script>
-const $ = s => document.querySelector(s);
-const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-let token = localStorage.vtoken || '', me = null, selectedUser = localStorage.vuser || 'intern', stats = {blocked:0, dropped:0, leaks:0};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let token=localStorage.vtoken||'',me=null,selectedUser=localStorage.vuser||'rahul@student',stats={blocked:0,dropped:0,leaks:0};
 
-async function api(path, opts = {}) {
-  const r = await fetch(path, {...opts, headers: {...(opts.headers||{}), Authorization: 'Bearer ' + token, ...(opts.body && !(opts.body instanceof FormData) ? {'Content-Type':'application/json'} : {})}});
-  if (!r.ok) throw new Error((await r.json().catch(()=>({detail:r.statusText}))).detail);
-  return r.json();
+function toast(msg){const el=$('#toast');el.textContent=msg;el.style.display='block';clearTimeout(window.__toast);window.__toast=setTimeout(()=>el.style.display='none',2600)}
+async function api(path,opts={}){const headers={...(opts.headers||{})};if(token)headers.Authorization='Bearer '+token;if(opts.body&&!(opts.body instanceof FormData))headers['Content-Type']='application/json';const r=await fetch(path,{...opts,headers});if(!r.ok)throw new Error((await r.json().catch(()=>({detail:r.statusText}))).detail||r.statusText);return r.json()}
+function resetStats(){stats={blocked:0,dropped:0,leaks:0};$('#sBlocked').textContent='0';$('#sDropped').textContent='0';$('#sLeaks').textContent='0';$('#sLeaks').className='metric-value green'}
+function roleName(u){
+  if(u.role_name) return u.role_name;
+  const role=String(u.role||u.username||'').toLowerCase().split('@').pop();
+  return role==='admin'?'Admin':role==='faculty'?'Faculty Member':'Student';
 }
-async function restoreSession() {
-  if (!token) return false;
-  try { me = await api('/api/me'); showApp(); return true; }
-  catch (_) { localStorage.removeItem('vtoken'); token = ''; return false; }
+function roleLabel(u){
+  if(u.role_description) return u.role_description;
+  const role=String(u.role||u.username||'').toLowerCase().split('@').pop();
+  return role==='admin'?'Administrator':role==='faculty'?'Faculty access':'Student access';
 }
-function showApp(){
-  $('#loginPanel').hidden = true;
-  $('#appShell').hidden = false;
-  $('#sessionUser').textContent = me.display;
-  loadDoors();
-}
-function resetStats(){ stats = {blocked:0, dropped:0, leaks:0}; $('#sBlocked').textContent='0'; $('#sDropped').textContent='0'; $('#sLeaks').textContent='0'; $('#sLeakBox').classList.remove('bad'); }
-function showLogin(){
-  $('#loginPanel').hidden = false;
-  $('#appShell').hidden = true;
-  $('#loginMsg').textContent = '';
-  $('#loginPassword').value = '';
-  renderLoginChoices();
-}
-function dial(level){return `<svg class="dial" viewBox="0 0 58 58" aria-hidden="true"><circle class="rim" cx="29" cy="29" r="28"/><circle class="face" cx="29" cy="29" r="20"/><line class="needle" x1="29" y1="29" x2="29" y2="13" style="transform:rotate(${-90+level*60}deg)"/><circle cx="29" cy="29" r="4" fill="#15191c"/></svg>`}
-
-async function loadDoors() {
-  const users = await (await fetch('/api/users')).json();
-  $('#doors').innerHTML = users.map(u => `<button class="door" data-u="${u.username}" aria-pressed="${u.username === me.username}">${dial(u.clearance)}<span><b>${esc(u.display.split(',')[0])}</b><small>${esc(u.display.split(',').slice(1).join(',').trim())}<br>Clearance ${u.clearance}${u.departments.length ? ', ' + esc(u.departments.join(' & ')) : ''}</small></span></button>`).join('');
-  document.querySelectorAll('.door').forEach(b => b.onclick = () => switchPersona(b.dataset.u));
-  $('#adminBox').hidden = me.clearance < 3;
-}
-async function switchPersona(name){
-  selectedUser = name;
-  localStorage.vuser = name;
-  localStorage.removeItem('vtoken');
-  token = '';
-  me = null;
-  resetStats();
-  $('#appShell').hidden = true;
-  showLogin();
+function bindPersonaCards(){
+  document.querySelectorAll('.persona').forEach(b=>{
+    b.onclick=()=>{
+      selectedUser=b.dataset.u;
+      localStorage.vuser=selectedUser;
+      $('#loginId').value=selectedUser;
+      document.querySelectorAll('.persona').forEach(x=>x.classList.toggle('active',x.dataset.u===selectedUser));
+      $('#loginPassword').focus();
+    };
+  });
 }
 function renderLoginChoices(){
-  fetch('/api/users').then(r => r.json()).then(users => {
-    $('#loginChoices').innerHTML = users.map(u => `<button type="button" class="auth-choice${u.username===selectedUser?' sel':''}" data-u="${u.username}"><b>${esc(u.display.split(',')[0])}</b><br><small>${esc(u.display.split(',').slice(1).join(',').trim())}<br>Clearance ${u.clearance}</small></button>`).join('');
-    document.querySelectorAll('.auth-choice').forEach(b => b.onclick = () => { selectedUser = b.dataset.u; document.querySelectorAll('.auth-choice').forEach(x=>x.classList.toggle('sel',x.dataset.u===selectedUser)); $('#loginPassword').focus(); });
-  }).catch(e => $('#loginMsg').textContent = e.message);
+  bindPersonaCards();
+  $('#loginId').value=localStorage.vuser||selectedUser||'rahul@student';
+  document.querySelectorAll('.persona').forEach(x=>x.classList.toggle('active',x.dataset.u===$('#loginId').value.trim().toLowerCase()));
 }
-$('#loginForm').onsubmit = async e => {
+function showLogin(){document.title='Logic Labs — Secure Knowledge';$('#loginPanel').classList.remove('hidden');$('#appShell').classList.add('hidden');$('#loginMsg').textContent='';$('#loginPassword').value='';renderLoginChoices()}
+function showApp(){
+  document.title='Logic Labs — Secure Workspace';
+  $('#loginPanel').classList.add('hidden');
+  $('#appShell').classList.remove('hidden');
+  const name=me.display||me.username;
+  $('#sessionUser').textContent=`${name} · ${roleName(me)}`;
+  $('#userAvatar').textContent=String(name).trim().slice(0,1).toUpperCase();
+  loadDoors();
+}
+async function restoreSession(){if(!token)return false;try{me=await api('/api/me');showApp();return true}catch(_){localStorage.removeItem('vtoken');token='';return false}}
+
+$('#togglePassword').onclick=()=>{const i=$('#loginPassword');const show=i.type==='password';i.type=show?'text':'password';$('#togglePassword').textContent=show?'◌':'◉';$('#togglePassword').setAttribute('aria-label',show?'Hide password':'Show password')}
+$('#loginId').addEventListener('input',e=>{const v=e.target.value.trim().toLowerCase();selectedUser=v;document.querySelectorAll('.persona').forEach(x=>x.classList.toggle('active',x.dataset.u===v));});
+$('#signupToggle').onclick=()=>$('#signupBox').classList.toggle('hidden');
+$('#signupBox').onsubmit=async e=>{
   e.preventDefault();
-  $('#loginMsg').textContent = 'Signing in…';
-  try {
-    const r = await (await fetch('/api/login', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username:selectedUser, password:$('#loginPassword').value})})).json();
-    if (!r.token) throw new Error(r.detail || 'Login failed');
-    token = r.token; me = r.user; localStorage.vtoken = token; localStorage.vuser = selectedUser; resetStats(); $('#loginPassword').value = ''; $('#loginMsg').textContent = ''; showApp();
-  } catch (e) { $('#loginMsg').textContent = e.message || 'Invalid username or password'; }
+  const msg=$('#signupMsg');
+  msg.classList.remove('ok');
+  msg.textContent='Creating secure account…';
+  try{
+    const r=await fetch('/api/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+      full_name:$('#signupName').value.trim(),
+      handle:$('#signupHandle').value.trim(),
+      role:$('#signupRole').value,
+      password:$('#signupPassword').value,
+      password_confirm:$('#signupPassword2').value
+    })});
+    const data=await r.json();
+    if(!r.ok||!data.token) throw new Error(data.detail||'Signup failed');
+    token=data.token; me=data.user; selectedUser=me.username;
+    localStorage.vtoken=token; localStorage.vuser=me.username;
+    msg.textContent=`Created ${me.login_id} and signed you in.`; msg.classList.add('ok');
+    setTimeout(showApp,250);
+  }catch(err){msg.textContent=err.message||'Unable to create account'}
 };
-$('#logoutBtn').onclick = async () => { try { if(token) await fetch('/api/logout', {method:'POST', headers:{Authorization:'Bearer '+token}}); } catch (_) {} localStorage.removeItem('vtoken'); token=''; me=null; $('#out').innerHTML=''; showLogin(); };
 
-function bump(res){stats.blocked += res.blocked||0; stats.dropped += res.dropped||0; $('#sBlocked').textContent = stats.blocked; $('#sDropped').textContent = stats.dropped;}
-
-function answerHTML(res, title) {
-  const claims = res.claims.length
-    ? res.claims.map(c => `<p class="claim">${esc(c.text)}${c.sources.map(n => `<button class="chip" data-n="${n}" aria-label="Open source ${n}">${n}</button>`).join('')}</p>`).join('')
-    : `<p class="claim">${esc(res.answer)}</p>`;
-  const src = res.sources.map(s => `<div class="src"><button class="chip" data-n="${s.n}">${s.n}</button> <b>${esc(s.source)}</b> <span class="meta">(${s.kind})</span><br><q>${esc(s.snippet)}…</q></div>`).join('');
-  return `<div class="card">${title ? `<b>${esc(title)}</b>` : ''}${claims}<p class="meta">${res.blocked} blocked by the vault, ${res.dropped} unsupported dropped, answered by ${res.mode}</p>${src}</div>`;
+$('#loginForm').onsubmit=async e=>{
+  e.preventDefault();
+  const btn=$('#loginBtn');
+  const loginId=$('#loginId').value.trim().toLowerCase();
+  btn.disabled=true;
+  $('#loginMsg').textContent='Authenticating securely…';
+  $('#loginMsg').classList.remove('ok');
+  try{
+    const response=await fetch('/api/login',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:loginId,password:$('#loginPassword').value})
+    });
+    const r=await response.json();
+    if(!response.ok||!r.token)throw new Error(r.detail||'Login failed');
+    token=r.token;
+    me=r.user;
+    selectedUser=r.user.username;
+    localStorage.vtoken=token;
+    localStorage.vuser=r.user.username;
+    resetStats();
+    $('#loginPassword').value='';
+    $('#loginMsg').textContent=`Authenticated as ${r.user.display} · ${r.user.role_name}`;
+    $('#loginMsg').classList.add('ok');
+    setTimeout(showApp,120);
+  }catch(err){
+    $('#loginMsg').textContent=err.message||'Invalid login ID or password';
+  }finally{btn.disabled=false}
 }
-function wire(root, res) {
-  root.querySelectorAll('.chip').forEach(b => b.onclick = () => openSrc(res.sources.find(s => s.n == b.dataset.n)));
-}
-async function openSrc(s) {
-  $('#dTitle').textContent = s.source;
-  if (s.kind === 'pdf' || s.kind === 'image') $('#dBody').innerHTML = `<img alt="Source page with the cited region highlighted" src="/api/chunk/${s.chunk_id}/image?token=${encodeURIComponent(token)}">`;
-  else { const c = await api('/api/chunk/' + s.chunk_id); $('#dBody').innerHTML = `<div class="dtext">${esc(c.text)}</div>`; }
-  $('#dlg').showModal();
-}
-$('#dClose').onclick = () => $('#dlg').close();
 
-async function run(btn, fn) { const all = document.querySelectorAll('button.btn'); all.forEach(b => b.disabled = true); try { await fn(); } catch (e) { $('#out').innerHTML = `<div class="card bad">${esc(e.message)}</div>`; } all.forEach(b => b.disabled = false); }
+function loadDoors(){
+  const fallback=[
+    {username:'rahul@student',display:'Rahul Patel',role:'student',role_name:'Student',role_description:'Student access',clearance:0},
+    {username:'neha@faculty',display:'Dr. Neha Sharma',role:'faculty',role_name:'Faculty Member',role_description:'Faculty access',clearance:2},
+    {username:'arjun@admin',display:'Arjun Mehta',role:'admin',role_name:'Admin',role_description:'Administrator',clearance:3}
+  ];
+  const render=users=>{
+    $('#doors').innerHTML=users.map(u=>{
+      const active=u.username===me.username;
+      const icon=u.role==='admin'?'🛡':u.role==='faculty'?'👥':'🎓';
+      return `<button class="rail-card ${active?'active':''}" data-u="${esc(u.username)}">
+        <span class="rail-main"><span class="rail-icon">${icon}</span><span>
+          <b>${esc(u.display)}</b><small>${esc(u.username)} · ${esc(roleName(u))}</small>
+        </span></span><span class="rail-clear c${u.clearance}">C${u.clearance}</span></button>`;
+    }).join('');
+    document.querySelectorAll('.rail-card').forEach(b=>b.onclick=()=>switchPersona(b.dataset.u));
+    $('#adminBox').hidden=me.clearance<3;
+  };
+  render(fallback);
+  fetch('/api/users').then(r=>r.ok?r.json():fallback).then(render).catch(()=>{});
+}
+async function switchPersona(name){selectedUser=name;localStorage.vuser=name;localStorage.removeItem('vtoken');token='';me=null;resetStats();showLogin();$('#loginId').value=name;document.querySelectorAll('.persona').forEach(x=>x.classList.toggle('active',x.dataset.u===name));}
 
-$('#askBtn').onclick = () => run(null, async () => {
-  const q = $('#q').value.trim(); if (!q) return;
-  $('#out').innerHTML = '<div class="card meta">Opening the vault…</div>';
-  const res = await api('/api/ask', {method:'POST', body: JSON.stringify({question:q})});
-  bump(res); $('#out').innerHTML = answerHTML(res); wire($('#out'), res);
-});
-$('#cmpBtn').onclick = () => run(null, async () => {
-  const q = $('#q').value.trim(); if (!q) return;
-  $('#out').innerHTML = '<div class="card meta">Asking as all three…</div>';
-  const list = await api('/api/compare', {method:'POST', body: JSON.stringify({question:q})});
-  $('#out').innerHTML = '<div class="cols"></div>';
-  list.forEach(res => { bump(res); const d = document.createElement('div'); d.innerHTML = answerHTML(res, res.display); $('#out .cols').appendChild(d); wire(d, res); });
-});
-$('#rtBtn').onclick = () => run(null, async () => {
-  $('#out').innerHTML = '<div class="card meta">Firing 12 attacks as ' + esc(me.display.split(',')[0]) + '…</div>';
-  const r = await api('/api/redteam', {method:'POST'});
-  stats.leaks += r.leaks; $('#sLeaks').textContent = stats.leaks; $('#sLeakBox').classList.toggle('bad', stats.leaks > 0); bump(r);
-  $('#out').innerHTML = `<div class="card"><b>${r.attacks} attacks, ${r.leaks} leaks.</b> <span class="meta">Watching ${r.canaries_watched} secret strings the user must never see. ${r.blocked} chunks blocked.</span>` +
-    r.results.map(x => `<div class="rt-row"><span class="${x.leaked ? 'bad' : 'ok'}">${x.leaked ? 'LEAKED' : 'Held'}</span> ${esc(x.attack)}<br><span class="meta">${esc(x.answer)}</span></div>`).join('') + '</div>';
-});
-document.querySelectorAll('.eg button').forEach(b => b.onclick = () => { $('#q').value = b.dataset.q; $('#askBtn').click(); });
-$('#q').addEventListener('keydown', e => { if (e.key === 'Enter') $('#askBtn').click(); });
-$('#up').onsubmit = async e => { e.preventDefault(); $('#upMsg').textContent = 'Ingesting…';
-  try { await api('/api/upload', {method:'POST', body: new FormData(e.target)}); $('#upMsg').textContent = 'Added to the vault.'; e.target.reset(); } catch (er) { $('#upMsg').textContent = er.message; } };
-(async()=>{ const restored = await restoreSession(); if(!restored) showLogin(); })();
+function bump(res){stats.blocked+=Number(res.blocked||0);stats.dropped+=Number(res.dropped||0);$('#sBlocked').textContent=stats.blocked;$('#sDropped').textContent=stats.dropped}
+function answerHTML(res,title){const claims=(res.claims||[]).length?(res.claims||[]).map(c=>`<p class="claim">${esc(c.text)}${(c.sources||[]).map(n=>`<button class="chip" data-n="${n}" aria-label="Open source ${n}">${n}</button>`).join('')}</p>`).join(''):`<p class="claim">${esc(res.answer||'No grounded answer found.')}</p>`;const src=(res.sources||[]).map(s=>`<div class="src"><button class="chip" data-n="${s.n}">${s.n}</button> <span class="title">${esc(s.source)}</span> <span class="answer-meta"> · ${esc(s.kind)}</span><q>${esc(s.snippet)}…</q></div>`).join('');return `<article class="answer-card"><div class="answer-title"><h3>${title?esc(title):'Grounded answer'}</h3><span class="badge">${esc(res.mode||'secure retrieval')}</span></div>${claims}<div class="answer-foot"><span>${Number(res.blocked||0)} blocked</span><span>${Number(res.dropped||0)} dropped</span><span>${(res.sources||[]).length} evidence sources</span></div>${src}</article>`}
+function wire(root,res){root.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{const s=(res.sources||[]).find(x=>String(x.n)===String(b.dataset.n));if(s)openSrc(s)})}
+async function openSrc(s){$('#dTitle').textContent=s.source||'Source';if(s.kind==='pdf'||s.kind==='image')$('#dBody').innerHTML=`<img alt="Source page with the cited region highlighted" src="/api/chunk/${s.chunk_id}/image?token=${encodeURIComponent(token)}">`;else{const c=await api('/api/chunk/'+s.chunk_id);$('#dBody').innerHTML=`<div class="modal-text">${esc(c.text)}</div>`}$('#dlg').showModal()}
+$('#dClose').onclick=()=>$('#dlg').close();
+async function run(fn){document.querySelectorAll('.btn,.primary-btn').forEach(b=>b.disabled=true);try{await fn()}catch(e){$('#out').innerHTML=`<article class="answer-card"><span class="bad">${esc(e.message)}</span></article>`;toast(e.message)}finally{document.querySelectorAll('.btn,.primary-btn').forEach(b=>b.disabled=false)}}
+
+$('#askBtn').onclick=()=>run(async()=>{const q=$('#q').value.trim();if(!q)return;$('#out').innerHTML='<article class="answer-card"><span class="answer-meta">Opening the vault…</span></article>';const res=await api('/api/ask',{method:'POST',body:JSON.stringify({question:q})});bump(res);$('#out').innerHTML=answerHTML(res);wire($('#out'),res)})
+$('#cmpBtn').onclick=()=>run(async()=>{const q=$('#q').value.trim();if(!q)return;$('#out').innerHTML='<article class="answer-card"><span class="answer-meta">Comparing authorized views…</span></article>';const list=await api('/api/compare',{method:'POST',body:JSON.stringify({question:q})});$('#out').innerHTML='<div class="two-col"></div>';list.forEach(res=>{bump(res);const d=document.createElement('div');d.innerHTML=answerHTML(res,res.display);$('#out .two-col').appendChild(d);wire(d,res)})})
+$('#rtBtn').onclick=()=>run(async()=>{$('#out').innerHTML='<article class="answer-card"><span class="answer-meta">Firing 12 adversarial retrieval attacks…</span></article>';const r=await api('/api/redteam',{method:'POST'});stats.leaks+=Number(r.leaks||0);$('#sLeaks').textContent=stats.leaks;$('#sLeaks').className=stats.leaks?'metric-value red':'metric-value green';bump(r);$('#out').innerHTML=`<article class="answer-card"><div class="answer-title"><h3>${r.attacks} attacks · ${r.leaks} leaks</h3><span class="badge">${r.leaks?'ATTENTION':'HELD'}</span></div><div class="answer-foot"><span>Watching ${r.canaries_watched} secret strings</span><span>${r.blocked} chunks blocked</span></div>${r.results.map(x=>`<div class="rt"><span class="${x.leaked?'bad':'ok'}">${x.leaked?'LEAKED':'HELD'}</span> · ${esc(x.attack)}<br><span>${esc(x.answer)}</span></div>`).join('')}</article>`})
+
+document.querySelectorAll('.example').forEach(b=>b.onclick=()=>{$('#q').value=b.dataset.q;$('#askBtn').click()});$('#q').addEventListener('keydown',e=>{if(e.key==='Enter')$('#askBtn').click()});$('#up').onsubmit=async e=>{e.preventDefault();$('#upMsg').textContent='Ingesting into the vault…';try{const r=await api('/api/upload',{method:'POST',body:new FormData(e.target)});$('#upMsg').textContent=r.kind==='db'?`Imported ${r.rows} CSV records into the vault.`:'Document added to the vault.';e.target.reset();toast('Knowledge added successfully')}catch(er){$('#upMsg').textContent=er.message}}
+
+(async()=>{const ok=await restoreSession();if(!ok)showLogin()})();
 </script>
 </body>
 </html>

@@ -19,8 +19,8 @@ def user_conn(user):
         register_vector(conn)
         with conn.transaction():
             conn.execute(
-                "SELECT set_config('app.clearance', %s, true), set_config('app.depts', %s, true)",
-                (str(int(user["clearance"])), ",".join(user["departments"])),
+                "SELECT set_config('app.clearance', %s, true), set_config('app.depts', %s, true), set_config('app.username', %s, true), set_config('app.role', %s, true)",
+                (str(int(user["clearance"])), ",".join(user["departments"]), str(user["username"]), str(user.get("role") or "student")),
             )
             yield conn
 

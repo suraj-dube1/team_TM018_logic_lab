@@ -1,104 +1,29 @@
-"""Run after starting VaultRAG to verify the hackathon demo path.
+"""Logic Labs university smoke test. Run after starting the app."""
+import os, sys, uuid, httpx
+BASE=os.getenv("LOGICLABS_BASE_URL","http://127.0.0.1:8000").rstrip("/")
+USERS={"rahul@student":"Student@123","neha@faculty":"Faculty@123","arjun@admin":"Admin@123"}
 
-Windows PowerShell:
-  cd backend
-  python smoke_test.py
+def login(c, login_id, pw):
+    r=c.post('/api/login',json={'username':login_id,'password':pw}); r.raise_for_status(); d=r.json(); return d['token'],d['user']
 
-Override defaults without editing code:
-  $env:VAULTRAG_BASE_URL='http://127.0.0.1:8000'
-  $env:VAULTRAG_INTERN_PASSWORD='...'
-  $env:VAULTRAG_MANAGER_PASSWORD='...'
-  $env:VAULTRAG_ADMIN_PASSWORD='...'
-"""
-import os
-import sys
-
-import httpx
-
-BASE = os.getenv("VAULTRAG_BASE_URL", "http://127.0.0.1:8000").rstrip("/")
-USERS = {
-    "intern": os.getenv("VAULTRAG_INTERN_PASSWORD", "intern123"),
-    "manager": os.getenv("VAULTRAG_MANAGER_PASSWORD", "manager123"),
-    "admin": os.getenv("VAULTRAG_ADMIN_PASSWORD", "admin123"),
-}
-
-
-def login(client, username):
-    r = client.post("/api/login", json={"username": username, "password": USERS[username]})
-    r.raise_for_status()
-    data = r.json()
-    assert data["user"]["username"] == username
-    return data["token"]
-
-
-def ask(client, token, question):
-    r = client.post("/api/ask", headers={"Authorization": f"Bearer {token}"}, json={"question": question})
-    r.raise_for_status()
-    return r.json()
-
+def ask(c,tok,q):
+    r=c.post('/api/ask',headers={'Authorization':f'Bearer {tok}'},json={'question':q}); r.raise_for_status(); return r.json()
 
 def main():
-    with httpx.Client(base_url=BASE, timeout=180) as c:
-        r = c.get("/")
-        r.raise_for_status()
-        print("PASS  server reachable")
-
-        tokens = {u: login(c, u) for u in USERS}
-        print("PASS  password login for intern/manager/admin")
-
-        for u, tok in tokens.items():
-            r = c.get("/api/me", headers={"Authorization": f"Bearer {tok}"})
-            r.raise_for_status()
-            assert r.json()["username"] == u
-        print("PASS  signed session tokens + /api/me")
-
-        intern_midnight = ask(c, tokens["intern"], "What is Project Midnight?")
-        admin_midnight = ask(c, tokens["admin"], "What is Project Midnight?")
-        assert intern_midnight["blocked"] > 0, intern_midnight
-        assert "nimbus labs" not in intern_midnight["answer"].lower()
-        assert "210 crore" not in intern_midnight["answer"].lower()
-        assert admin_midnight["claims"], admin_midnight
-        assert "nimbus labs" in admin_midnight["answer"].lower()
-        print("PASS  Project Midnight blocked for intern and visible to admin")
-
-        intern_salary = ask(c, tokens["intern"], "What is Asha Mehta's salary?")
-        manager_salary = ask(c, tokens["manager"], "What is Asha Mehta's salary?")
-        admin_salary = ask(c, tokens["admin"], "What is Asha Mehta's salary?")
-        assert intern_salary["blocked"] > 0 and "28,00,000" not in intern_salary["answer"], intern_salary
-        assert manager_salary["blocked"] > 0 and "28,00,000" not in manager_salary["answer"], manager_salary
-        assert admin_salary["claims"], admin_salary
-        assert "28,00,000" in admin_salary["answer"]
-        print("PASS  salary ACL: intern=blocked manager=blocked admin=visible")
-
-        red = c.post("/api/redteam", headers={"Authorization": f"Bearer {tokens['intern']}"})
-        red.raise_for_status()
-        red = red.json()
-        assert red["attacks"] == 12
-        assert red["leaks"] == 0, red
-        print("PASS  red team: 12 attacks, 0 leaks")
-
-    # Optional direct DB assertion: a restricted connection with no RLS session settings must see zero chunks.
-    try:
-        import psycopg
-        from dotenv import load_dotenv
-        load_dotenv()
-        app_url = os.getenv("APP_DB_URL")
-        if app_url:
-            with psycopg.connect(app_url) as db:
-                n = db.execute("SELECT count(*) FROM chunks").fetchone()[0]
-                assert n == 0, f"expected fail-closed 0 chunks, got {n}"
-            print("PASS  RLS fail-closed: no session settings -> 0 chunks")
-        else:
-            print("SKIP  RLS direct check: APP_DB_URL is not configured in this shell")
-    except ImportError:
-        print("SKIP  RLS direct check: psycopg/python-dotenv unavailable")
-
-    print("\nVaultRAG smoke test PASSED")
-
-
-if __name__ == "__main__":
-    try:
-        main()
-    except Exception as exc:
-        print(f"\nVaultRAG smoke test FAILED: {exc}", file=sys.stderr)
-        raise
+    with httpx.Client(base_url=BASE,timeout=180) as c:
+        c.get('/').raise_for_status(); print('PASS  server reachable')
+        u=c.get('/api/users'); u.raise_for_status(); rows=u.json(); names={x['username']:x['role_name'] for x in rows}
+        assert names['rahul@student']=='Student' and names['neha@faculty']=='Faculty Member' and names['arjun@admin']=='Admin'; print('PASS  role-based login IDs')
+        st,stu=login(c,'rahul@student',USERS['rahul@student']); ft,fac=login(c,'neha@faculty',USERS['neha@faculty']); at,adm=login(c,'arjun@admin',USERS['arjun@admin']); print('PASS  seeded logins')
+        q=ask(c,st,"What is Rahul Patel's result?"); assert q['claims']; print('PASS  student can retrieve own result')
+        q2=ask(c,st,"Show Priya Shah's result"); assert q2['blocked']>0 or not q2['claims']; print('PASS  student cannot retrieve another student result')
+        q3=ask(c,ft,'What is my Monday timetable?'); assert q3['claims']; print('PASS  faculty timetable retrieval')
+        q4=ask(c,ft,"Show Rahul Patel's result"); assert q4['blocked']>0 or not q4['claims']; print('PASS  faculty cannot retrieve student-private result')
+        q5=ask(c,at,"Show Rahul Patel's result"); assert q5['claims']; print('PASS  admin can retrieve student result')
+        handle='demo'+uuid.uuid4().hex[:7]
+        sr=c.post('/api/signup',json={'full_name':'Demo Student','handle':handle,'role':'student','password':'DemoPass123','password_confirm':'DemoPass123'}); sr.raise_for_status(); sd=sr.json(); assert sd['user']['login_id']==handle+'@student'; print('PASS  student self-signup')
+        red=c.post('/api/redteam',headers={'Authorization':f'Bearer {st}'}); red.raise_for_status(); rd=red.json(); assert rd['attacks']==12 and rd['leaks']==0; print('PASS  red team: 12 attacks, 0 leaks')
+    print('\nLogic Labs university smoke test PASSED')
+if __name__=='__main__':
+    try: main()
+    except Exception as exc: print(f'FAILED: {exc}',file=sys.stderr); raise

@@ -25,3 +25,6 @@ backend/data/
 
 # Generated caches
 .cache/
+
+# Private hackathon dataset
+/dataset/

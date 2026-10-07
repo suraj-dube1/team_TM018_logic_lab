@@ -68,19 +68,19 @@ def extract(path):
     return "text", _window(words, 1)
 
 
-def _store(title, kind, path, clearance, depts, items, canaries):
+def _store(title, kind, path, clearance, depts, items, canaries, owner_username=None):
     """items: list of dicts(page, text, bbox, source). Returns doc id."""
     vecs = embed_docs([i["text"] for i in items])
     with admin_conn() as conn:
         doc_id = conn.execute(
-            "INSERT INTO documents(title, kind, path, min_clearance, departments) VALUES (%s,%s,%s,%s,%s) RETURNING id",
-            (title, kind, path, clearance, list(depts)),
+            "INSERT INTO documents(title, kind, path, min_clearance, departments, owner_username) VALUES (%s,%s,%s,%s,%s,%s) RETURNING id",
+            (title, kind, path, clearance, list(depts), owner_username),
         ).fetchone()["id"]
         with conn.cursor() as cur:
             cur.executemany(
-                "INSERT INTO chunks(doc_id, source, kind, page, bbox, text, embedding, min_clearance, departments) "
-                "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)",
-                [(doc_id, i["source"], kind, i.get("page", 1), i.get("bbox"), i["text"], v, clearance, list(depts))
+                "INSERT INTO chunks(doc_id, source, kind, page, bbox, text, embedding, min_clearance, departments, owner_username) "
+                "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+                [(doc_id, i["source"], kind, i.get("page", 1), i.get("bbox"), i["text"], v, clearance, list(depts), owner_username)
                  for i, v in zip(items, vecs)],
             )
         for tok in canaries or []:
@@ -88,16 +88,16 @@ def _store(title, kind, path, clearance, depts, items, canaries):
     return doc_id
 
 
-def ingest_file(path, title, clearance, depts, canaries=None):
+def ingest_file(path, title, clearance, depts, canaries=None, owner_username=None):
     kind, chunks = extract(path)
     for c in chunks:
         c["source"] = f"{title}, p.{c['page']}" if kind == "pdf" else title
     if not chunks:
         raise ValueError("no text could be extracted from this file")
-    return _store(title, kind, path, clearance, depts, chunks, canaries)
+    return _store(title, kind, path, clearance, depts, chunks, canaries, owner_username)
 
 
-def ingest_csv_file(path, title, clearance, depts, canaries=None):
+def ingest_csv_file(path, title, clearance, depts, canaries=None, owner_username=None):
     """Ingest a CSV as database-style records: one searchable/citable chunk per row.
 
     Preferred columns are `id` and one of `text`, `content`, `record`, `description`.
@@ -122,12 +122,12 @@ def ingest_csv_file(path, title, clearance, depts, canaries=None):
                 records.append((rid or str(n), re.sub(r"\s+", " ", text)))
         if not records:
             raise ValueError("CSV contains no non-empty records")
-        doc_id = ingest_records(title, "csv_records", records, clearance, depts, canaries)
+        doc_id = ingest_records(title, "csv_records", records, clearance, depts, canaries, owner_username)
         return doc_id, len(records)
 
 
-def ingest_records(title, table, records, clearance, depts, canaries=None):
+def ingest_records(title, table, records, clearance, depts, canaries=None, owner_username=None):
     """Structured DB rows: one chunk per row, citable as db:<table>#<row id>."""
     items = [{"text": re.sub(r"\s+", " ", txt), "source": f"db:{table}#{rid}", "page": 1, "bbox": None}
              for rid, txt in records]
-    return _store(title, "db", None, clearance, depts, items, canaries)
+    return _store(title, "db", None, clearance, depts, items, canaries, owner_username)
