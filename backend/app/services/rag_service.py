@@ -118,7 +118,14 @@ def _get_representative_citations(allowed_levels: list[str], top_n: int = 3) -> 
         idx = 1
         for lvl in allowed_levels:
             chunks = store.metadata_by_level.get(lvl, [])
-            for ch in chunks:
+            clean_chunks = [
+                ch
+                for ch in chunks
+                if ch.document_title
+                and not ch.document_title.lower().startswith(("chapter", "title", "report", "scan", "doc_", "test"))
+            ]
+            candidates = clean_chunks if clean_chunks else chunks
+            for ch in candidates:
                 if ch.document_title and ch.document_title not in seen_docs and len(ch.text) > 40:
                     seen_docs.add(ch.document_title)
                     excerpt = ch.text.strip().replace("\n", " ")

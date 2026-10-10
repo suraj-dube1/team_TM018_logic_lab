@@ -200,10 +200,10 @@ export const api = {
       }),
   },
   rag: {
-    query: (question: string, top_k = 4) =>
+    query: (question: string, top_k = 4, history: { role: string; content: string }[] = []) =>
       request<RAGResponse>('/api/rag/query', {
         method: 'POST',
-        body: JSON.stringify({ question, top_k }),
+        body: JSON.stringify({ question, top_k, history }),
       }),
   },
   admin: {

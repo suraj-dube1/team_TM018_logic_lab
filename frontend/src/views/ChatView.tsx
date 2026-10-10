@@ -38,11 +38,32 @@ export function ChatView() {
   const [loading, setLoading] = useState(false);
   const [expandedCitations, setExpandedCitations] = useState<Record<string, boolean>>({});
 
-  const sampleQuestions = [
-    'What is the undergraduate student attendance requirement?',
-    'Who must approve faculty sabbatical leave applications?',
-    'What is the confidential institutional research budget allocation?',
-  ];
+  const sampleQuestions = (() => {
+    if (user?.role === 'ADMIN') {
+      return [
+        'What documents are shared in the system?',
+        'What is the confidential institutional research budget allocation?',
+        'Who must approve faculty sabbatical leave applications?',
+        'Analyze shared documents and governance policies',
+      ];
+    }
+    if (user?.role === 'FACULTY') {
+      return [
+        'What documents are accessible to faculty?',
+        'Who must approve faculty sabbatical leave applications?',
+        'What is the undergraduate student attendance requirement?',
+        'What are the faculty research and teaching guidelines?',
+      ];
+    }
+    // Default STUDENT / INTERN
+    return [
+      'What documents are shared with students?',
+      'What is the student attendance and medical leave policy?',
+      'What are the admission eligibility requirements and process?',
+      'What scholarships and financial assistance are available?',
+      'What can a student get in VaultRAG?',
+    ];
+  })();
 
   const handleSend = async (queryText?: string) => {
     const q = queryText || input;
@@ -60,7 +81,14 @@ export function ChatView() {
     setLoading(true);
 
     try {
-      const res: RAGResponse = await api.rag.query(q.trim(), 4);
+      const history = messages
+        .filter((m) => m.id !== 'welcome')
+        .slice(-6)
+        .map((m) => ({
+          role: m.sender === 'user' ? 'user' : 'assistant',
+          content: m.text,
+        }));
+      const res: RAGResponse = await api.rag.query(q.trim(), 4, history);
       const assistantMsg: Message = {
         id: String(Date.now() + 1),
         sender: 'assistant',
