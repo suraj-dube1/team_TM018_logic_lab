@@ -24,7 +24,16 @@ class Settings(BaseSettings):
     ocr_languages: str = "eng"
     tesseract_cmd: str | None = None
     jwt_secret_key: str
-    jwt_access_token_minutes: int = 30
+    jwt_access_token_minutes: int = 1440
+    embedding_model_name: str = "all-MiniLM-L6-v2"
+    vector_store_dir: Path = BACKEND_DIR / "vector_store"
+    gemini_api_key: str | None = None
+    openai_api_key: str | None = None
+    openai_api_base: str = "https://api.openai.com/v1"
+    openrouter_api_key: str | None = None
+    openrouter_base_url: str = "https://openrouter.ai/api/v1"
+    llm_provider: str = "auto"
+    llm_model_name: str = "openai/gpt-4o-mini"
 
     model_config = SettingsConfigDict(
         env_file=BACKEND_DIR / ".env",
@@ -43,8 +52,8 @@ class Settings(BaseSettings):
     @field_validator("jwt_access_token_minutes")
     @classmethod
     def validate_token_lifetime(cls, value: int) -> int:
-        if not 1 <= value <= 1440:
-            raise ValueError("JWT_ACCESS_TOKEN_MINUTES must be between 1 and 1440")
+        if not 1 <= value <= 43200:
+            raise ValueError("JWT_ACCESS_TOKEN_MINUTES must be between 1 and 43200")
         return value
 
     @property

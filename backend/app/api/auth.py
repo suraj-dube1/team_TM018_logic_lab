@@ -12,6 +12,13 @@ from app.db.database import get_db
 from app.models.user import User
 from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse, UserResponse
 from app.services.auth_service import authenticate_user, create_access_token, create_user, normalize_email
+from app.services.audit_service import (
+    ACTION_LOGIN_FAILURE,
+    ACTION_LOGIN_SUCCESS,
+    STATUS_DENIED,
+    STATUS_SUCCESS,
+    record_audit_event,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -38,8 +45,22 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse
     """Validate credentials and return a short-lived signed access token."""
     user = authenticate_user(db, email=str(payload.email), password=payload.password)
     if user is None:
+        record_audit_event(
+            db=db,
+            action=ACTION_LOGIN_FAILURE,
+            status=STATUS_DENIED,
+            user_email=str(payload.email),
+            details="Invalid credentials submitted",
+        )
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password.")
     token, lifetime = create_access_token(user.id)
+    record_audit_event(
+        db=db,
+        action=ACTION_LOGIN_SUCCESS,
+        status=STATUS_SUCCESS,
+        user=user,
+        details="User logged in successfully",
+    )
     return TokenResponse(access_token=token, expires_in=lifetime)
 
 

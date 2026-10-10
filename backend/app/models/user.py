@@ -11,10 +11,12 @@ from app.db.database import Base
 
 
 class Role(StrEnum):
-    """Initial application roles; additional roles can be added centrally."""
+    """Supported application roles; corporate and academic personas."""
 
     STUDENT = "STUDENT"
     FACULTY = "FACULTY"
+    INTERN = "INTERN"
+    MANAGER = "MANAGER"
     ADMIN = "ADMIN"
 
 

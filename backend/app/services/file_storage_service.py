@@ -11,11 +11,13 @@ from uuid import uuid4
 
 
 CHUNK_SIZE = 64 * 1024
-FILE_TYPES: dict[str, tuple[str, bytes]] = {
+FILE_TYPES: dict[str, tuple[str, bytes | None]] = {
     ".pdf": ("pdf", b"%PDF-"),
     ".png": ("image", b"\x89PNG\r\n\x1a\n"),
     ".jpg": ("image", b"\xff\xd8\xff"),
     ".jpeg": ("image", b"\xff\xd8\xff"),
+    ".txt": ("text", None),
+    ".md": ("text", None),
 }
 
 
@@ -83,8 +85,14 @@ def store_upload(
                 raise UploadTooLarge("File exceeds the maximum upload size.")
 
             source_type, signature = file_type
-            if not first_chunk.startswith(signature):
-                raise UploadRejected("File content does not match its extension.")
+            if signature is not None:
+                if not first_chunk.startswith(signature):
+                    raise UploadRejected("File content does not match its extension.")
+            else:
+                try:
+                    first_chunk.decode("utf-8", errors="replace")
+                except Exception as exc:
+                    raise UploadRejected("File content is not valid text.") from exc
 
             digest = hashlib.sha256()
             digest.update(first_chunk)

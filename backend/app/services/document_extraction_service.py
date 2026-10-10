@@ -139,10 +139,29 @@ def extract_image(path: Path) -> ExtractionResult:
     )
 
 
+def extract_text_file(path: Path) -> ExtractionResult:
+    """Extract plain text or markdown document into normalized page text."""
+    try:
+        raw_text = path.read_text(encoding="utf-8", errors="replace")
+    except Exception as exc:
+        raise ExtractionError("CANNOT_READ_TEXT_FILE") from exc
+
+    cleaned = normalize_text(raw_text)
+    if not cleaned:
+        raise ExtractionError("NO_TEXT_FOUND")
+
+    return ExtractionResult(
+        pages=[ExtractedPage(page_number=1, text=cleaned)],
+        extraction_method="plain_text",
+    )
+
+
 def extract_document(path: Path, source_type: str) -> ExtractionResult:
     """Select a supported extraction path using persisted source metadata."""
     if source_type == "pdf":
         return extract_pdf(path)
     if source_type == "image":
         return extract_image(path)
+    if source_type == "text":
+        return extract_text_file(path)
     raise ExtractionError("UNSUPPORTED_SOURCE_TYPE")

@@ -30,7 +30,9 @@ class AccessControlledResource(Protocol):
 ROLE_SECURITY_LEVELS: Mapping[Role, frozenset[SecurityLevel]] = MappingProxyType(
     {
         Role.STUDENT: frozenset({SecurityLevel.PUBLIC}),
+        Role.INTERN: frozenset({SecurityLevel.PUBLIC}),
         Role.FACULTY: frozenset({SecurityLevel.PUBLIC, SecurityLevel.INTERNAL}),
+        Role.MANAGER: frozenset({SecurityLevel.PUBLIC, SecurityLevel.INTERNAL}),
         Role.ADMIN: frozenset(
             {SecurityLevel.PUBLIC, SecurityLevel.INTERNAL, SecurityLevel.CONFIDENTIAL}
         ),

@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.db.database import get_db
-from app.models.user import User
+from app.models.user import Role, User
 
 
 bearer_scheme = HTTPBearer(auto_error=False)
@@ -40,3 +40,13 @@ def get_current_user(
     if user is None or not user.is_active:
         raise unauthorized
     return user
+
+
+def require_admin_user(current_user: User = Depends(get_current_user)) -> User:
+    """Ensure the caller holds the ADMIN role."""
+    if current_user.role != Role.ADMIN.value:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Administrator access required.",
+        )
+    return current_user

@@ -16,7 +16,7 @@ class DocumentResponse(BaseModel):
     id: str
     title: str
     original_filename: str
-    source_type: Literal["pdf", "image"]
+    source_type: Literal["pdf", "image", "text"]
     security_level: SecurityLevel
     processing_status: str
     file_size_bytes: int
@@ -44,6 +44,24 @@ class DocumentChunkResponse(BaseModel):
     page_number: int
     text: str
     document_title: str
-    source_type: Literal["pdf", "image"]
+    source_type: Literal["pdf", "image", "text"]
     security_level: SecurityLevel
     uploaded_by: str
+
+
+class BatchUploadItemResult(BaseModel):
+    filename: str
+    status: Literal["SUCCESS", "FAILED"]
+    document_id: str | None = None
+    title: str | None = None
+    chunk_count: int = 0
+    error: str | None = None
+
+
+class BatchUploadResponse(BaseModel):
+    total_files: int
+    successful_count: int
+    failed_count: int
+    folder_name: str | None = None
+    results: list[BatchUploadItemResult]
+
