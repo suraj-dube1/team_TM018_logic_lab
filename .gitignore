@@ -1,30 +1,28 @@
 # Python
 __pycache__/
 *.py[cod]
-.venv/
 venv/
+.venv/
+.pytest_cache/
+.pytest-temp*/
+*.db
+*.sqlite
+*.sqlite3
 
-# Secrets / local configuration
+# Local configuration and data
 .env
-.env.*
-!.env.example
-!.env.local.example
-*.pem
-*.key
-credentials.json
-
-# Runtime data
-/data/
+backend/.env
 backend/data/
-*.log
+backend/uploads/
+backend/vector_store/
 
-# OS / editor
-.DS_Store
+# Node
+node_modules/
+frontend/dist/
+frontend/*.tsbuildinfo
+
+# Editors and OS
 .vscode/
 .idea/
-
-# Generated caches
-.cache/
-
-# Private hackathon dataset
-/dataset/
+.DS_Store
+Thumbs.db
