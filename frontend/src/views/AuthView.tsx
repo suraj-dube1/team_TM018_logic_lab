@@ -1,10 +1,15 @@
 import { useState } from 'react';
-import { ArrowRight, Lock, Mail, Shield, User, Sparkles } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Lock, Mail, Shield, User, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-export function AuthView() {
+interface AuthViewProps {
+  initialMode?: 'login' | 'register';
+  onBackToHome?: () => void;
+}
+
+export function AuthView({ initialMode = 'login', onBackToHome }: AuthViewProps) {
   const { login, register } = useAuth();
-  const [isRegister, setIsRegister] = useState(false);
+  const [isRegister, setIsRegister] = useState(initialMode === 'register');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -50,6 +55,17 @@ export function AuthView() {
   return (
     <div className="min-h-screen bg-[#07111f] flex flex-col justify-center py-12 sm:px-6 lg:px-8 text-slate-100">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
+        {onBackToHome && (
+          <div className="mb-4 text-left">
+            <button
+              onClick={onBackToHome}
+              className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-cyan-300 transition"
+            >
+              <ArrowLeft size={14} />
+              <span>Back to Overview</span>
+            </button>
+          </div>
+        )}
         <div className="size-14 mx-auto rounded-2xl bg-cyan-400 text-slate-950 grid place-items-center shadow-xl shadow-cyan-400/20">
           <Shield size={32} className="stroke-[2.5]" />
         </div>

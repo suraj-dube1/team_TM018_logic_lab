@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Sidebar, type TabKey } from './components/Sidebar';
+import { LandingView } from './views/LandingView';
 import { AuthView } from './views/AuthView';
 import { DashboardView } from './views/DashboardView';
 import { ChatView } from './views/ChatView';
@@ -11,6 +12,8 @@ import { AuditView } from './views/AuditView';
 function MainApp() {
   const { user, isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<TabKey>('dashboard');
+  const [showAuth, setShowAuth] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
 
   if (isLoading) {
     return (
@@ -24,7 +27,26 @@ function MainApp() {
   }
 
   if (!user) {
-    return <AuthView />;
+    if (showAuth) {
+      return (
+        <AuthView
+          initialMode={authMode}
+          onBackToHome={() => setShowAuth(false)}
+        />
+      );
+    }
+    return (
+      <LandingView
+        onOpenSignIn={() => {
+          setAuthMode('login');
+          setShowAuth(true);
+        }}
+        onOpenRegister={() => {
+          setAuthMode('register');
+          setShowAuth(true);
+        }}
+      />
+    );
   }
 
   return (
