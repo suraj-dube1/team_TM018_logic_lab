@@ -42,7 +42,7 @@ export function ChatView() {
     if (user?.role === 'ADMIN') {
       return [
         'What documents are shared in the system?',
-        'What is the confidential institutional research budget allocation?',
+        'What is the emergency reserve fund endowment allocation in the executive financial plan?',
         'Who must approve faculty sabbatical leave applications?',
         'Analyze shared documents and governance policies',
       ];
